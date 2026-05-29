@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DayRoad - Daily Roadmap Planner</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M6 6.8h9.4a4.8 4.8 0 0 1 0 9.6H8.8" />
+              <path d="m10.6 12-4.2 4.2L2.2 12l4.2-4.2Z" />
+            </svg>
+          </span>
+          <div>
+            <h1>DayRoad</h1>
+            <p>오늘 할 일의 끝나는 시간을 미리 봅니다</p>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <button class="icon-button" id="prevDay" aria-label="이전 날짜">
+            <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" /></svg>
+          </button>
+          <label class="date-control">
+            <span>날짜</span>
+            <input type="date" id="planDate" />
+          </label>
+          <button class="icon-button" id="nextDay" aria-label="다음 날짜">
+            <svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></svg>
+          </button>
+          <button class="primary-button" id="savePlan">
+            <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" /><path d="M17 21v-8H7v8" /><path d="M7 3v5h8" /></svg>
+            저장됨
+          </button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <aside class="planner-sidebar" aria-label="하루 일정 입력">
+          <section class="quick-add-panel">
+            <div class="section-title">
+              <h2>빠른 추가</h2>
+              <button class="icon-button soft" id="resetPlan" aria-label="샘플 일정으로 초기화">
+                <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v7h7" /></svg>
+              </button>
+            </div>
+            <form id="taskForm" class="task-form">
+              <label>
+                <span>할 일</span>
+                <input id="taskTitle" type="text" placeholder="예: 보고서 정리" required />
+              </label>
+              <div class="form-grid">
+                <label>
+                  <span>시작</span>
+                  <input id="taskStart" type="time" value="09:00" required />
+                </label>
+                <label>
+                  <span>소요</span>
+                  <select id="taskDuration">
+                    <option value="30">30분</option>
+                    <option value="45">45분</option>
+                    <option value="60" selected>1시간</option>
+                    <option value="90">1시간 30분</option>
+                    <option value="120">2시간</option>
+                    <option value="180">3시간</option>
+                  </select>
+                </label>
+              </div>
+              <div class="form-grid">
+                <label>
+                  <span>구간</span>
+                  <select id="taskSection">
+                    <option value="morning">오전</option>
+                    <option value="afternoon">오후</option>
+                    <option value="evening">저녁</option>
+                  </select>
+                </label>
+                <label>
+                  <span>우선순위</span>
+                  <select id="taskPriority">
+                    <option value="high">높음</option>
+                    <option value="medium" selected>보통</option>
+                    <option value="low">낮음</option>
+                  </select>
+                </label>
+              </div>
+              <button class="primary-button full" type="submit">
+                <svg viewBox="0 0 24 24"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
+                로드맵에 추가
+              </button>
+            </form>
+          </section>
+
+          <section class="section-list" aria-label="시간대별 일정">
+            <div class="section-block" data-section="morning">
+              <div class="section-head">
+                <span class="dot teal"></span>
+                <h3>오전</h3>
+                <span id="morningCount">0</span>
+              </div>
+              <div class="task-list" id="morningList"></div>
+            </div>
+            <div class="section-block" data-section="afternoon">
+              <div class="section-head">
+                <span class="dot amber"></span>
+                <h3>오후</h3>
+                <span id="afternoonCount">0</span>
+              </div>
+              <div class="task-list" id="afternoonList"></div>
+            </div>
+            <div class="section-block" data-section="evening">
+              <div class="section-head">
+                <span class="dot coral"></span>
+                <h3>저녁</h3>
+                <span id="eveningCount">0</span>
+              </div>
+              <div class="task-list" id="eveningList"></div>
+            </div>
+          </section>
+        </aside>
+
+        <section class="roadmap-panel" aria-label="하루 로드맵">
+          <div class="roadmap-header">
+            <div>
+              <h2>오늘의 로드맵</h2>
+              <p id="roadmapSummary">계획을 계산하는 중</p>
+            </div>
+            <div class="view-tabs" role="tablist" aria-label="로드맵 보기">
+              <button class="tab active" data-view="roadmap">로드맵</button>
+              <button class="tab" data-view="agenda">목록</button>
+            </div>
+          </div>
+
+          <div class="timeline-wrap" id="roadmapView">
+            <div class="time-rail" id="timeRail"></div>
+            <div class="timeline" id="timeline"></div>
+          </div>
+
+          <div class="agenda-view hidden" id="agendaView">
+            <table>
+              <thead>
+                <tr>
+                  <th>상태</th>
+                  <th>일정</th>
+                  <th>시간</th>
+                  <th>완료 예상</th>
+                  <th>위험도</th>
+                </tr>
+              </thead>
+              <tbody id="agendaBody"></tbody>
+            </table>
+          </div>
+
+          <form class="bottom-add" id="bottomForm">
+            <input id="bottomTitle" type="text" placeholder="지금 떠오른 일을 빠르게 추가" />
+            <button class="icon-button strong" aria-label="빠른 일정 추가">
+              <svg viewBox="0 0 24 24"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
+            </button>
+          </form>
+        </section>
+
+        <aside class="inspector" aria-label="선택한 일정 상세">
+          <section class="day-score">
+            <div class="progress-ring" id="progressRing" style="--progress: 0">
+              <span id="progressValue">0%</span>
+            </div>
+            <div>
+              <h2>진행률</h2>
+              <p id="progressText">아직 완료된 일이 없습니다</p>
+            </div>
+          </section>
+
+          <section class="selected-task">
+            <div class="section-title">
+              <h2>선택한 일</h2>
+              <button class="icon-button danger" id="deleteTask" aria-label="선택한 일정 삭제">
+                <svg viewBox="0 0 24 24"><path d="M3 6h18" /><path d="M8 6V4h8v2" /><path d="M6 6l1 15h10l1-15" /></svg>
+              </button>
+            </div>
+            <div id="selectedTaskEmpty" class="empty-state">로드맵에서 일정을 선택하세요.</div>
+            <form id="detailForm" class="detail-form hidden">
+              <label>
+                <span>제목</span>
+                <input id="detailTitle" type="text" />
+              </label>
+              <div class="form-grid">
+                <label>
+                  <span>시작</span>
+                  <input id="detailStart" type="time" />
+                </label>
+                <label>
+                  <span>소요</span>
+                  <input id="detailDuration" type="number" min="10" step="5" />
+                </label>
+              </div>
+              <label>
+                <span>메모</span>
+                <textarea id="detailNotes" rows="3" placeholder="끝내기 전에 확인할 것"></textarea>
+              </label>
+              <div class="finish-card">
+                <span>예상 완료</span>
+                <strong id="finishTime">--:--</strong>
+                <small id="riskLabel">일정 여유 있음</small>
+              </div>
+              <div class="toggle-row">
+                <span>집중 모드</span>
+                <button type="button" class="toggle" id="focusToggle" aria-pressed="false"><span></span></button>
+              </div>
+            </form>
+          </section>
+
+          <section class="checklist-panel">
+            <div class="section-title">
+              <h2>마감 체크</h2>
+              <button class="icon-button soft" id="addCheck" aria-label="체크리스트 추가">
+                <svg viewBox="0 0 24 24"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
+              </button>
+            </div>
+            <div class="checklist" id="checklist"></div>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <template id="taskItemTemplate">
+      <button class="task-row">
+        <span class="mini-status"></span>
+        <span class="task-row-title"></span>
+        <span class="task-row-time"></span>
+      </button>
+    </template>
+
+    <script src="app.js"></script>
+  </body>
+</html>
