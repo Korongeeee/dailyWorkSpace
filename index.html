@@ -51,7 +51,7 @@
             <form id="taskForm" class="task-form">
               <label>
                 <span>할 일</span>
-                <input id="taskTitle" type="text" placeholder="예: 보고서 정리" required />
+                <input id="taskTitle" type="text" placeholder="할 일을 입력하세요" required />
               </label>
               <div class="form-grid">
                 <label>
@@ -80,11 +80,11 @@
                   </select>
                 </label>
                 <label>
-                  <span>우선순위</span>
+                  <span>위험도</span>
                   <select id="taskPriority">
-                    <option value="high">높음</option>
-                    <option value="medium" selected>보통</option>
-                    <option value="low">낮음</option>
+                    <option value="high">늦어짐</option>
+                    <option value="medium" selected>집중 필요</option>
+                    <option value="low">여유 있음</option>
                   </select>
                 </label>
               </div>
@@ -197,6 +197,14 @@
                   <input id="detailDuration" type="number" min="10" step="5" />
                 </label>
               </div>
+              <label>
+                <span>위험도</span>
+                <select id="detailRisk">
+                  <option value="low">여유 있음</option>
+                  <option value="medium">집중 필요</option>
+                  <option value="high">늦어짐</option>
+                </select>
+              </label>
               <label>
                 <span>메모</span>
                 <textarea id="detailNotes" rows="3" placeholder="끝내기 전에 확인할 것"></textarea>

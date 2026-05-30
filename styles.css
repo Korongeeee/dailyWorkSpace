@@ -709,7 +709,7 @@ th {
 
 .check-item {
   display: grid;
-  grid-template-columns: 22px 1fr;
+  grid-template-columns: 22px 1fr 34px;
   gap: 9px;
   align-items: center;
   min-height: 34px;
@@ -726,6 +726,27 @@ th {
   border-color: transparent;
   background: var(--surface-soft);
   font-size: 13px;
+}
+
+.check-delete {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--coral);
+}
+
+.check-delete:hover {
+  border-color: #f3c5bf;
+  background: #fdece9;
+}
+
+.check-delete svg {
+  width: 16px;
+  height: 16px;
 }
 
 .hidden {

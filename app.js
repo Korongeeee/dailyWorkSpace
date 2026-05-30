@@ -115,8 +115,14 @@ const els = {
 
 function todayISO() {
   const now = new Date();
-  const offset = now.getTimezoneOffset() * 60000;
-  return new Date(now.getTime() - offset).toISOString().slice(0, 10);
+  return localDateISO(now);
+}
+
+function localDateISO(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 function cloneTasks(tasks) {
@@ -167,6 +173,10 @@ function finishOf(task) {
 }
 
 function riskOf(task) {
+  if (task.priority === "high") return { key: "danger", label: "늦어짐" };
+  if (task.priority === "medium") return { key: "warn", label: "집중 필요" };
+  if (task.priority === "low") return { key: "safe", label: "여유 있음" };
+
   const finish = finishOf(task);
   if (finish > 22 * 60) return { key: "danger", label: "늦어짐" };
   if (finish > 18 * 60 && task.section !== "evening") return { key: "warn", label: "밀릴 수 있음" };
@@ -307,6 +317,7 @@ function renderInspector() {
   $("#detailTitle").value = task.title;
   $("#detailStart").value = task.start;
   $("#detailDuration").value = task.duration;
+  $("#detailRisk").value = task.priority || "low";
   $("#detailNotes").value = task.notes || "";
   $("#finishTime").textContent = timeFromMinutes(finishOf(task));
   $("#riskLabel").textContent = risk.label;
@@ -332,17 +343,25 @@ function renderChecklist(task) {
     item.innerHTML = `
       <input type="checkbox" ${check.done ? "checked" : ""} />
       <input type="text" value="${escapeHTML(check.text)}" />
+      <button type="button" class="check-delete" aria-label="체크 항목 삭제">
+        <svg viewBox="0 0 24 24"><path d="M3 6h18" /><path d="M8 6V4h8v2" /><path d="M6 6l1 15h10l1-15" /></svg>
+      </button>
     `;
     item.querySelector('input[type="checkbox"]').addEventListener("change", (event) => {
       mutateSelected((task) => {
         const target = task.checks.find((entry) => entry.id === check.id);
         target.done = event.target.checked;
-      });
+      }, false);
     });
     item.querySelector('input[type="text"]').addEventListener("input", (event) => {
       mutateSelected((task) => {
         const target = task.checks.find((entry) => entry.id === check.id);
         target.text = event.target.value;
+      }, false);
+    });
+    item.querySelector(".check-delete").addEventListener("click", () => {
+      mutateSelected((task) => {
+        task.checks = task.checks.filter((entry) => entry.id !== check.id);
       });
     });
     els.checklist.appendChild(item);
@@ -367,11 +386,15 @@ function updateTask(id, patch) {
   render();
 }
 
-function mutateSelected(mutator) {
+function mutateSelected(mutator, shouldRender = true) {
   const task = selectedTask();
   if (!task) return;
   mutator(task);
-  render();
+  if (shouldRender) {
+    render();
+  } else {
+    savePlan(false);
+  }
 }
 
 function addTask(input) {
@@ -393,9 +416,10 @@ function addTask(input) {
 }
 
 function changeDate(days) {
-  const date = new Date(`${state.date}T00:00:00`);
+  const [year, month, day] = state.date.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
   date.setDate(date.getDate() + days);
-  loadPlan(date.toISOString().slice(0, 10));
+  loadPlan(localDateISO(date));
   render();
 }
 
@@ -466,6 +490,7 @@ function bindEvents() {
     });
   });
   $("#detailDuration").addEventListener("input", (event) => mutateSelected((task) => (task.duration = Number(event.target.value))));
+  $("#detailRisk").addEventListener("change", (event) => mutateSelected((task) => (task.priority = event.target.value)));
   $("#detailNotes").addEventListener("input", (event) => mutateSelected((task) => (task.notes = event.target.value)));
   els.focusToggle.addEventListener("click", () => mutateSelected((task) => (task.focus = !task.focus)));
   els.addCheck.addEventListener("click", () => {
